@@ -1,5 +1,6 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router';
 
 export default function Homepage() {
   const BASE_URL = 'https://api.escuelajs.co/api/v1/';
@@ -7,6 +8,7 @@ export default function Homepage() {
   const [products, setProducts] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -48,6 +50,19 @@ export default function Homepage() {
                 <p>{product.description}</p>
                 <p>Category: {product.category.name}</p>
                 <img src={product.images[0]} alt='' />
+                <div>
+                  <input
+                    type='button'
+                    name='deleteProduct'
+                    id={`deleteProduct-${product.id}`}
+                    value='delete'
+                    onClick={(e) => {
+                      navigate(`products/${product.id}/delete`);
+                    }}
+                  />
+
+                  <Link to={`/products/${product.id}`}>View</Link>
+                </div>
               </div>
             );
           })}

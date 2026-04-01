@@ -3,39 +3,56 @@ import axios from 'axios';
 import { useNavigate } from 'react-router';
 
 export default function ProductForm() {
-  const [title, setTitle] = useState(null);
-  const [description, setDescription] = useState(null);
-  const [categoryId, setCategoryId] = useState(null);
-  const [price, setPrice] = useState(null);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [price, setPrice] = useState('');
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const handleOnSubmit = async (event) => {
     const BASE_URL = 'https://api.escuelajs.co/api/v1/';
-
     event.preventDefault();
-    console.log('title: ' + title);
-    console.log('description: ' + description);
-    console.log('categoryId: ' + categoryId);
-    console.log('price: ' + price);
+    setError(null);
 
-    let body = {
-      title: title,
-      price: price,
-      description: description,
-      categoryId: categoryId,
-      images: [],
+    const trimmedTitle = title.trim();
+    const trimmedDescription = description.trim();
+    const selectedCategory = Number(categoryId);
+    const numericPrice = Number(price);
+
+    if (
+      !trimmedTitle ||
+      !trimmedDescription ||
+      !selectedCategory ||
+      Number.isNaN(numericPrice) ||
+      numericPrice <= 0
+    ) {
+      setError({
+        message:
+          'Please fill in all fields and choose a valid category and price.',
+      });
+      return;
+    }
+
+    const body = {
+      title: trimmedTitle,
+      price: numericPrice,
+      description: trimmedDescription,
+      categoryId: selectedCategory,
+      images: ['https://placeimg.com/640/480/any'],
     };
 
-    await axios
-      .post(BASE_URL + '/products', body)
-      .then((response) => {
-        console.log(response.data);
-        navigate('/');
-      })
-      .catch((err) => {
-        setError(err);
+    try {
+      const response = await axios.post(BASE_URL + 'products/', body);
+      console.log(response.data);
+      navigate('/');
+    } catch (err) {
+      console.log(err);
+      setError({
+        status: err.response?.status,
+        message: err.response?.data?.message || err.message,
       });
+    }
   };
   return (
     <>
@@ -67,14 +84,7 @@ export default function ProductForm() {
             ></textarea>
           </div>
           <div>
-            <label
-              htmlFor='category'
-              onChange={(e) => {
-                setCategoryId(e.target.value);
-              }}
-            >
-              Category:{' '}
-            </label>
+            <label htmlFor='categoryId'>Category: </label>
             <select
               name='categoryId'
               id='categoryId'
